@@ -17,14 +17,16 @@ const instructions = Platform.select({
 });
 
 export default class App extends Component<{}> {
+
   render() {
+    const config = ["someValue", "someValue2", "someValue3", "someValue4", null]
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>Welcome to React Native!</Text>
         <Text style={styles.instructions}>To get started, edit App.js</Text>
         <Text style={styles.instructions}>{instructions}</Text>
         <SupermoduleView
-          exampleProp="Huuray  IOS!!!!"
+          exampleProp={config}
           style={{ width: 100, height: 100 }}
         />
       </View>

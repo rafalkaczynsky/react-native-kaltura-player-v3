@@ -40,7 +40,7 @@
 }
 
 // example of setter for props from react native 
-- (void)setExampleProp:(NSString *)exampleProp{
+- (void)setExampleProp:(NSArray *)exampleProp{
     if(![exampleProp isEqual:_exampleProp]){
         _exampleProp = [exampleProp copy];
         [self addTextView: _exampleProp];
@@ -48,10 +48,26 @@
 }
 
 // once prop is set we can use it  
-- (void)addTextView:(NSString *)text
+- (void)addTextView:(NSArray *)config
 {
-    UILabel *textLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
-    textLabel.text = text;
+   
+   UILabel *textLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  
+   NSString *partnerId = config[0];
+   NSString *configId = config[1];
+   NSString *entryId = config[2];
+   NSString *url = config[3];
+
+
+    NSLog (partnerId);
+    NSLog (configId);
+    NSLog (entryId);
+    NSLog (url);
+
+    NSLog (@"Number of books in dictionary = %lu", [config count]);
+
+
+    textLabel.text = partnerId;
     textLabel.textColor = [UIColor whiteColor];
     [textLabel sizeToFit];
     [_childView addSubview: textLabel];
