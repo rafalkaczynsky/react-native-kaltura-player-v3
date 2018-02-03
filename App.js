@@ -19,7 +19,16 @@ const instructions = Platform.select({
 export default class App extends Component<{}> {
 
   render() {
-    const config = ["someValue", "someValue2", "someValue3", "someValue4", null]
+    /**
+     *  
+     * 
+   NSString *partnerId = config[0];
+   NSString *configId = config[1];
+   NSString *entryId = config[2];
+   NSString *url = config[3];
+     * 
+     */
+    const config = ["1831271", "26698911", "1_o426d3i4", "http://cdnapi.kaltura.com", null]
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>Welcome to React Native!</Text>

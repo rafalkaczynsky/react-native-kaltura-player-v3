@@ -19,6 +19,7 @@
 {
   RCTEventDispatcher *_eventDispatcher;
   UIView *_childView;
+  UIViewController *_kalturaPlayer;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -75,20 +76,29 @@
    NSString *entryId = config[2];
    NSString *url = config[3];
 
-
     NSLog (partnerId);
     NSLog (configId);
     NSLog (entryId);
     NSLog (url);
 
-    NSLog (@"Number of books in dictionary = %lu", [config count]);
+  //  NSLog (@"Check if numper of props is correct = %lu", [config count]);
 
     textLabel.text = partnerId;
     textLabel.textColor = [UIColor whiteColor];
     [textLabel sizeToFit];
 
-    self.player.view.frame = _childView.frame;
-    [_childView addSubview: self.player.view];
+    KPPlayerConfig *configuration = [[KPPlayerConfig alloc] initWithDomain:url
+                                                           uiConfID:configId
+                                                           partnerId:partnerId];
+    // Video Entry
+    configuration.entryId = entryId;
+    // Setting this property will cache the html pages in the limit size
+    configuration.cacheSize = 0.8;
+
+    _kalturaPlayer = [[KPViewController alloc] initWithConfiguration:configuration];
+
+    _kalturaPlayer.view.frame = _childView.frame;
+    [_childView addSubview: _kalturaPlayer.view];
     [_childView setNeedsDisplay];
 }
 
