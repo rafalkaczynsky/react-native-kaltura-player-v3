@@ -4,7 +4,6 @@
 #import "supermodule.h"
 #import "supermoduleManager.h"
 
-
 // import RCTBridge
 #if __has_include(<React/RCTBridge.h>)
 #import <React/RCTBridge.h>
@@ -23,10 +22,6 @@
 // https://facebook.github.io/react-native/docs/native-modules-ios.html
 RCT_EXPORT_MODULE();
 
-// Return the native view that represents your React component
-
-
-
 - (UIView *)view
 {
   return [[supermodule alloc] initWithEventDispatcher:self.bridge.eventDispatcher];
@@ -34,7 +29,8 @@ RCT_EXPORT_MODULE();
 
 
 
-RCT_EXPORT_VIEW_PROPERTY(exampleProp, NSArray)
+
+RCT_EXPORT_VIEW_PROPERTY(configEntries, NSArray)
 
 // Export constants
 // https://facebook.github.io/react-native/releases/next/docs/native-modules-ios.html#exporting-constants

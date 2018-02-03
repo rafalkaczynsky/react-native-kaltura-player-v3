@@ -13,5 +13,5 @@ export default class SupermoduleView extends Component {
 }
 
 SupermoduleView.propTypes = {
-  exampleProp: PropTypes.array
+  configEntries: PropTypes.array
 }

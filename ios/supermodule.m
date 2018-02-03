@@ -13,7 +13,6 @@
 #import “React/RCTEventDispatcher.h” // Required when used as a Pod in a Swift project
 #endif
 
-
 @implementation supermodule : UIView  
 
 {
@@ -26,8 +25,9 @@
 {
     if ((self = [super init])){
         _eventDispatcher = eventDispatcher;
-        _childView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
-        _childView.backgroundColor = [UIColor blueColor];
+    //    _childView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+        _childView = [[UIView alloc] init];
+      _childView.backgroundColor = [UIColor blackColor];
     }
 
     return self;
@@ -42,13 +42,15 @@
     [self addSubview: _childView]; // add subview to UIView
 }
 
-// example of setter for props from react native 
-- (void)setExampleProp:(NSArray *)exampleProp{
-    if(![exampleProp isEqual:_exampleProp]){
-        _exampleProp = [exampleProp copy];
-        [self addTextView: _exampleProp];
+// setter for props from react native 
+- (void)configEntries:(NSArray *)configEntries{
+    if(![configEntries isEqual:_configEntries]){
+        _configEntries = [configEntries copy];
+        [self configEntries: _configEntries];
     }
 }
+
+
 
 - (UIViewController *)player {
   if (!_player) {
@@ -65,16 +67,18 @@
   return _player;
 }
 
-// once prop is set we can use it  
-- (void)addTextView:(NSArray *)config
+
+
+// once prop is set we can use it here 
+- (void)setConfigEntries:(NSArray *)configEntries
 {
    
-   UILabel *textLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+ //  UILabel *textLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
   
-   NSString *partnerId = config[0];
-   NSString *configId = config[1];
-   NSString *entryId = config[2];
-   NSString *url = config[3];
+   NSString *partnerId = configEntries[0];
+   NSString *configId = configEntries[1];
+   NSString *entryId = configEntries[2];
+   NSString *url = configEntries[3];
 
     NSLog (partnerId);
     NSLog (configId);
@@ -82,10 +86,9 @@
     NSLog (url);
 
   //  NSLog (@"Check if numper of props is correct = %lu", [config count]);
-
-    textLabel.text = partnerId;
-    textLabel.textColor = [UIColor whiteColor];
-    [textLabel sizeToFit];
+  //  textLabel.text = partnerId;
+   // textLabel.textColor = [UIColor whiteColor];
+   // [textLabel sizeToFit];
 
     KPPlayerConfig *configuration = [[KPPlayerConfig alloc] initWithDomain:url
                                                            uiConfID:configId
@@ -98,8 +101,12 @@
     _kalturaPlayer = [[KPViewController alloc] initWithConfiguration:configuration];
 
     _kalturaPlayer.view.frame = _childView.frame;
+
+
     [_childView addSubview: _kalturaPlayer.view];
     [_childView setNeedsDisplay];
 }
+
+
 
 @end

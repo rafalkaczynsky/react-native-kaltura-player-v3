@@ -10,7 +10,8 @@
     "prop-types": "^15.6.0",
     "react": "16.2.0",
     "react-native": "0.52.2",
-    "react-native-create-bridge": "^2.0.1"
+    "react-native-create-bridge": "^2.0.1",
+    "react-native-elements": "^1.0.0-beta"
   },
   "devDependencies": {
     "babel-jest": "22.1.0",

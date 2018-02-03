@@ -13,6 +13,4 @@
 // http://facebook.github.io/react-native/docs/native-components-ios.html#ios-mapview-example
 @interface supermoduleManager : RCTViewManager
 
-
-
 @end

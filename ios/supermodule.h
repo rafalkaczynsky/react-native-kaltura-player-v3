@@ -8,7 +8,7 @@
 @interface supermodule : UIView
 
   // Define view properties here with @property
-  @property (nonatomic, strong) NSArray *exampleProp;
+  @property (nonatomic, strong) NSArray *configEntries;
   @property (retain, nonatomic) UIViewController *player; 
 
   // Initializing with the event dispatcher allows us to communicate with JS
