@@ -27,7 +27,7 @@ export default class App extends Component<{}> {
         <Text style={styles.instructions}>{instructions}</Text>
         <SupermoduleView
           exampleProp={config}
-          style={{ width: 100, height: 100 }}
+          style={{ width: 320, height: 180 }}
         />
       </View>
     );

@@ -1,6 +1,8 @@
 //  Created by react-native-create-bridge
 #import <Foundation/Foundation.h>
 #import "supermodule.h"
+#import <KALTURAPlayerSDK/KPPlayerConfig.h>
+#import <KALTURAPlayerSDK/KPViewController.h>
 
 // import RCTEventDispatcher
 #if __has_include(<React/RCTEventDispatcher.h>)
@@ -47,6 +49,21 @@
     }
 }
 
+- (UIViewController *)player {
+  if (!_player) {
+    // Account Params 
+    KPPlayerConfig *config = [[KPPlayerConfig alloc] initWithDomain:@"http://cdnapi.kaltura.com"
+                                                           uiConfID:@"26698911"
+                                                           partnerId:@"1831271"];
+    // Video Entry
+    config.entryId = @"1_o426d3i4";
+    // Setting this property will cache the html pages in the limit size
+    config.cacheSize = 0.8;
+    _player = [[KPViewController alloc] initWithConfiguration:config];
+  }
+  return _player;
+}
+
 // once prop is set we can use it  
 - (void)addTextView:(NSArray *)config
 {
@@ -66,11 +83,13 @@
 
     NSLog (@"Number of books in dictionary = %lu", [config count]);
 
-
     textLabel.text = partnerId;
     textLabel.textColor = [UIColor whiteColor];
     [textLabel sizeToFit];
-    [_childView addSubview: textLabel];
+
+    self.player.view.frame = _childView.frame;
+    [_childView addSubview: self.player.view];
     [_childView setNeedsDisplay];
 }
+
 @end

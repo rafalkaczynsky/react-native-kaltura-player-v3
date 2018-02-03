@@ -4,6 +4,7 @@
 #import "supermodule.h"
 #import "supermoduleManager.h"
 
+
 // import RCTBridge
 #if __has_include(<React/RCTBridge.h>)
 #import <React/RCTBridge.h>
@@ -15,6 +16,7 @@
 
 @implementation supermoduleManager
 
+
 @synthesize bridge = _bridge;
 
 // Export a native module
@@ -22,10 +24,15 @@
 RCT_EXPORT_MODULE();
 
 // Return the native view that represents your React component
+
+
+
 - (UIView *)view
 {
   return [[supermodule alloc] initWithEventDispatcher:self.bridge.eventDispatcher];
 }
+
+
 
 RCT_EXPORT_VIEW_PROPERTY(exampleProp, NSArray)
 
