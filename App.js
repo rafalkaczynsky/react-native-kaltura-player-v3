@@ -75,10 +75,13 @@ export default class App extends Component<{}> {
         />
             </TouchableOpacity>
           </View>
+
+          {/* ------ OUR REACT - NATIVE CALTURA PLAYER------ */}
           <SupermoduleView
             configEntries={config}
             style={{width: this.state.width, height: this.state.height }}
           />
+        {/* ----------------------------------------------- */}
         </View>
       </View>
     );
