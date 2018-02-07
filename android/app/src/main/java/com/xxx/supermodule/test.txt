@@ -1,0 +1,59 @@
+    @Override
+    public View createViewInstance(ThemedReactContext context){
+        // Create a view here
+        // https://facebook.github.io/react-native/docs/native-components-android.html#2-implement-method-createviewinstance
+        mContext = context;
+
+       // LayoutInflater  mInflater = (LayoutInflater)context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
+
+        //First. Create PKMediaConfig object.
+        mediaConfig = new PKMediaConfig();
+
+
+        //Set start position of the media. This will
+        //automatically start playback from specified position.
+        mediaConfig.setStartPosition(START_POSITION);
+
+        //Second. Create PKMediaEntry object.
+        PKMediaEntry mediaEntry = createMediaEntry();
+
+        //Add it to the mediaConfig.
+        mediaConfig.setMediaEntry(mediaEntry);
+
+        //Add simple play/pause button.
+       
+
+        //Create player instance, using config object.
+        //Create instance of the player.
+        player = PlayKitManager.loadPlayer(mContext, null);  
+
+                   //Add player view to the layout.
+        view =  View.inflate(mContext, R.layout.activity_main, null);
+        playPauseButton = (Button) view.findViewById(R.id.play_pause_button);
+
+        playPauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (player.isPlaying()) {
+                    //If player is playing, change text of the button and pause.
+                    playPauseButton.setText(R.string.play_text);
+                    player.pause();
+                } else {
+                    //If player is not playing, change text of the button and play.
+                    playPauseButton.setText(R.string.pause_text);
+                    player.play();
+                }
+            }
+        });
+
+       
+            
+                    //Prepare player with media configuration. 
+
+        player.prepare(mediaConfig);
+
+        //Start the playback of the media.
+        player.play();
+                   
+        return view;
+    }

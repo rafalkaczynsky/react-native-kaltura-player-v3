@@ -3,8 +3,16 @@
 package com.xxx.supermodule;
 
 import android.view.View;
-
+import android.view.ViewGroup ;
+import com.xxx.R;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.app.Activity;
 import com.facebook.react.uimanager.SimpleViewManager;
+import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
 
@@ -18,11 +26,12 @@ import com.kaltura.playkit.Player;
 import java.util.ArrayList;
 import java.util.List;
 
-public class supermoduleManager extends SimpleViewManager<View> {
+public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     public static final String REACT_CLASS = "supermodule";
 
     private ThemedReactContext mContext;
     private View view;
+    private Activity mActivity;
 
     private static final int START_POSITION = 60; // one minute.
 /**
@@ -39,12 +48,12 @@ https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8x
 
     //The url of the source to play
     private static final String SOURCE_URL = "https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8xyq/v/1/flavorId/1_y1rbgvs6/name/a.mp4";
-
     private static final String ENTRY_ID = "1_89fm8xyq";
-    private static final String MEDIA_SOURCE_ID =  "1_y1rbgvs6";
+    private static final String MEDIA_SOURCE_ID = "1821821";//   entryId
 
     private Player player;
     private PKMediaConfig mediaConfig;
+    private Button playPauseButton;
   //  private MockMediaProvider mockProvider;
 
     @Override
@@ -55,7 +64,7 @@ https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8x
     }
 
     @Override
-    public View createViewInstance(ThemedReactContext context){
+    public ViewGroup createViewInstance(ThemedReactContext context){
         // Create a view here
         // https://facebook.github.io/react-native/docs/native-components-android.html#2-implement-method-createviewinstance
         mContext = context;
@@ -75,20 +84,42 @@ https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8x
         //Add it to the mediaConfig.
         mediaConfig.setMediaEntry(mediaEntry);
 
+        //Add simple play/pause button.
+       
+
         //Create player instance, using config object.
         //Create instance of the player.
         player = PlayKitManager.loadPlayer(mContext, null);                   
                    //Add player view to the layout.
-                    view = new View(context);
-                    View playerView = player.getView();
-                    view = playerView;
-                    //Prepare player with media configuration.
-        player.prepare(mediaConfig);
 
-        //Start the playback of the media.
-        player.play();
+        ViewGroup flowContainer   = (ViewGroup) ViewGroup.inflate(mContext, R.layout.activity_main, null);
+        // Get player View
+        View playerView = player.getView();
+        //add player view to ViewGroup
+        flowContainer.addView(playerView);
+
+        // Add Simple Play/Pause Button to Layout
+        playPauseButton = (Button) flowContainer.findViewById(R.id.play_pause_button);
+
+        playPauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (player.isPlaying()) {
+                    //If player is playing, change text of the button and pause.
+                    playPauseButton.setText(R.string.play_text);
+                    player.pause();
+                } else {
+                    //If player is not playing, change text of the button and play.
+                    playPauseButton.setText(R.string.pause_text);
+                    player.play();
+                }
+            }
+        });  
+
+        //Prepare player with media configuration.
+        player.prepare(mediaConfig);
                    
-        return view;
+        return flowContainer;
     }
 
     private PKMediaEntry createMediaEntry() {
@@ -124,19 +155,25 @@ https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8x
         PKMediaSource mediaSource = new PKMediaSource();
 
         //Set the id.
-        mediaSource.setId(MEDIA_SOURCE_ID);
+       // mediaSource.setId(MEDIA_SOURCE_ID);
 
         //Set the content url. In our case it will be link to hls source(.m3u8).
         mediaSource.setUrl(SOURCE_URL);
 
         //Set the format of the source. In our case it will be hls.
-        mediaSource.setMediaFormat(PKMediaFormat.hls);
+        mediaSource.setMediaFormat(PKMediaFormat.mp4);
 
         //Add media source to the list.
         mediaSources.add(mediaSource);
 
         return mediaSources;
     }
+
+
+    /**
+     * Just add a simple button which will start/pause playback.
+     */
+
 
     @ReactProp(name = "exampleProp")
     public void setExampleProp(View view, String prop) {

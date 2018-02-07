@@ -13,12 +13,12 @@ import java.util.Collections;
 import java.util.List;
 
 public class supermodulePackage implements ReactPackage {
+    
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Collections.emptyList();
     }
 
-    
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         // Register your native component's view manager
         // https://facebook.github.io/react-native/docs/native-components-android.html#4-register-the-viewmanager
