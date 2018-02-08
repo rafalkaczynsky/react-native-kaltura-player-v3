@@ -105,6 +105,7 @@ android {
         applicationId "com.xxx"
         minSdkVersion 16
         targetSdkVersion 22
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
         ndk {
@@ -142,12 +143,14 @@ android {
 
 dependencies {
     compile fileTree(dir: "libs", include: ["*.jar"])
-    compile "com.android.support:appcompat-v7:27.0.1"
-    compile "com.facebook.react:react-native:+"  // From node_modules
+    compile 'com.android.support:appcompat-v7:27.0.1'
+    compile 'com.android.support:design:27.0.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile "com.facebook.react:react-native:+"   
     compile 'com.google.android.gms:play-services-base:11.8.0'
     compile 'com.google.android.gms:play-services-ads:11.8.0'
 
-
+    compile 'com.kaltura.dtg:dtglib:2.2.4' // Kaltura PlayKit DTG is an Android library that enables downloading MPEG-DASH and HLS streams for offline viewing.
     compile "com.kaltura.playkit:playkit:3.3.5"
 }
 
