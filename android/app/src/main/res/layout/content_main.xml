@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-   
+    android:background="@color/black"
+    android:orientation="vertical"
+    android:gravity="bottom"
     tools:context="com.kaltura.playkit.samples.offline.MainActivity"
     tools:showIn="@layout/activity_main_offline">
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/player_root"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" />
-    <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Play"
-            android:id="@+id/play_pause_button"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"/>
+        android:gravity="bottom"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" />
 
-</android.support.constraint.ConstraintLayout>
+    <include layout="@layout/exoplayer_controls"/>
+
+  
+</RelativeLayout>

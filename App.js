@@ -33,7 +33,7 @@ export default class App extends Component<{}> {
     this.state = {
       fullScreen: false,
       width: 380,
-      height: 180
+      height: 250
     };
   }
 
@@ -43,7 +43,7 @@ export default class App extends Component<{}> {
       this.setState({width: width, height: height, fullScreen: true})
     }
     else{
-      this.setState({width: 380, height: 180, fullScreen: false})
+      this.setState({width: 380, height: 250, fullScreen: false})
     }
   }
 

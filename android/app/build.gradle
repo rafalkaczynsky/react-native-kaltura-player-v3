@@ -152,6 +152,8 @@ dependencies {
 
     compile 'com.kaltura.dtg:dtglib:2.2.4' // Kaltura PlayKit DTG is an Android library that enables downloading MPEG-DASH and HLS streams for offline viewing.
     compile "com.kaltura.playkit:playkit:3.3.5"
+    compile 'com.github.rubensousa:previewseekbar:1.2'
+    compile 'com.github.rubensousa:previewseekbar-exoplayer:2.6.0'
 }
 
 // Run this once to be able to run the application with BUCK

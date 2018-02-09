@@ -6,6 +6,7 @@ import com.xxx.R;
 
 import android.app.Activity;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -20,6 +21,9 @@ import android.view.View;
 import android.view.ViewGroup ;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.widget.SeekBar;
+import android.support.design.widget.Snackbar;
+
 
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ViewGroupManager;
@@ -55,6 +59,8 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
 
     private static final int START_POSITION = 0; // one minute.
     private static final long MIN_EXP_SEC = 10;
+
+  
     /**
     const config = [
       '2358011',partnerId
@@ -67,17 +73,22 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     private static final String ENTRY_ID = "1_89fm8xyq"; //ENTRY_ID
     private static final String MEDIA_SOURCE_ID = "1821821"; // PARTNER_ID
     
+
     private static final String PLAYER_TYPE = "OFFLINE"; // CAN BE OFFLINE ALSO
 
     // PROPS  NEEDED FOR OFFLINE PLAYER
     private static final String ASSET_URL = "https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8xyq/v/1/flavorId/1_y1rbgvs6/name/a.mp4";
     private static final String ASSET_ID = "1_89fm8xyq";
     private static final String ASSET_LICENSE_URL = null;
+    private static final String NETWORK_STATUS = "OFFLINE";
 
     private Player player;
     private PKMediaConfig mediaConfig;
-    private Button playPauseButton;
+    private ImageButton playPauseButton;
     private ViewGroup playerView;
+    private Button submitButton;
+    private SeekBar simpleSeekBar;
+
 
     private ContentManager contentManager;
     private LocalAssetsManager localAssetsManager;
@@ -118,45 +129,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     // ==========================================================
     //         ------------ OFFLINE PLAYER ---------------
     // ==========================================================
-/*
 
-        //First. Create PKMediaConfig object.
-        mediaConfig = new PKMediaConfig();
-        //Set start position of the media. This will
-        //automatically start playback from specified position.
-        mediaConfig.setStartPosition(START_POSITION);
-        //Second. Create PKMediaEntry object.
-        PKMediaEntry mediaEntry = createMediaEntry();
-        //Add it to the mediaConfig.
-        mediaConfig.setMediaEntry(mediaEntry);
-        //Create instance of the player.
-        player = PlayKitManager.loadPlayer(mContext, null);                   
-        //Add player view to the layout.
-        ViewGroup flowContainer   = (ViewGroup) ViewGroup.inflate(mContext, R.layout.activity_main_simple, null);
-        // Get player View
-        View playerView = player.getView();
-        //add player view to ViewGroup
-        flowContainer.addView(playerView);
-        // Add Simple Play/Pause Button to Layout
-        playPauseButton = (Button) flowContainer.findViewById(R.id.play_pause_button);
-        playPauseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (player.isPlaying()) {
-                    //If player is playing, change text of the button and pause.
-                    playPauseButton.setText(R.string.play_text);
-                    player.pause();
-                } else {
-                    //If player is not playing, change text of the button and play.
-                    playPauseButton.setText(R.string.pause_text);
-                    player.play();
-                }
-            }
-        });  
-        //Prepare player with media configuration.
-        player.prepare(mediaConfig);
-
-*/
     private ViewGroup createOfflinePlayerView(ThemedReactContext context){
 
         //First. Create PKMediaConfig object.
@@ -169,21 +142,47 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         //Add it to the mediaConfig.
         mediaConfig.setMediaEntry(mediaEntry);
 
-        ViewGroup flowContainer   = (ViewGroup) ViewGroup.inflate(mContext, R.layout.activity_main_offline, null);
+       // ViewGroup flowContainer   = (ViewGroup) ViewGroup.inflate(mContext, R.layout.activity_main_offline, null);
         // Get player View
         //Create instance of the player.
+        ViewGroup mainContent   = (ViewGroup) ViewGroup.inflate(mContext, R.layout.content_main, null);
+
+
+        ViewGroup placeholder =  mainContent.findViewById(R.id.player_root);
 
         if (player == null) {
             player = PlayKitManager.loadPlayer(mContext, null);
 
             View playerView = player.getView();
             //add player view to ViewGroup
-            flowContainer.addView(playerView);
+            mainContent.addView(playerView);
+    
         }
 
-        //toolbar = (Toolbar) flowContainer.findViewById(R.id.toolbar);
-  
+   
+      //SEEK BAR
+        simpleSeekBar=(SeekBar) mainContent.findViewById(R.id.exo_progress);
+        // perform seek bar change listener event used for getting the progress value
+        simpleSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            int progressChangedValue = 0;
+
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                progressChangedValue = progress;
+            }
+
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                Toast.makeText(mContext, "Seek bar progress is :" + progressChangedValue,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    
        // mAppCompatActivity.setSupportActionBar(toolbar);
+       /*
         fab = (FloatingActionButton) flowContainer.findViewById(R.id.fab);
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -191,20 +190,20 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
             public void onClick(View view) {
                 showMenu();
             }
-        });
+        });*/
 
                 // Add Simple Play/Pause Button to Layout
-        playPauseButton = (Button) flowContainer.findViewById(R.id.play_pause_button);
+        playPauseButton = (ImageButton) mainContent.findViewById(R.id.play_pause_button);
         playPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (player.isPlaying()) {
                     //If player is playing, change text of the button and pause.
-                    playPauseButton.setText(R.string.play_text);
+                  //  playPauseButton.setText(R.string.play_text);
                     player.pause();
                 } else {
                     //If player is not playing, change text of the button and play.
-                    playPauseButton.setText(R.string.pause_text);
+                  //  playPauseButton.setText(R.string.pause_text);
                     player.play();
                 }
             }
@@ -215,7 +214,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         startContentManager(context);
         startLocalAssetsManager(context);
         
-        return flowContainer;
+        return mainContent;
     }
 
     private PKMediaEntry mediaEntry(String id, String url, String licenseUrl) {
@@ -520,17 +519,17 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         //add player view to ViewGroup
         flowContainer.addView(playerView);
         // Add Simple Play/Pause Button to Layout
-        playPauseButton = (Button) flowContainer.findViewById(R.id.play_pause_button);
+        playPauseButton = (ImageButton) flowContainer.findViewById(R.id.play_pause_button);
         playPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (player.isPlaying()) {
                     //If player is playing, change text of the button and pause.
-                    playPauseButton.setText(R.string.play_text);
+                   // playPauseButton.setText(R.string.play_text);
                     player.pause();
                 } else {
                     //If player is not playing, change text of the button and play.
-                    playPauseButton.setText(R.string.pause_text);
+                   // playPauseButton.setText(R.string.pause_text);
                     player.play();
                 }
             }
@@ -547,11 +546,9 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
 
         //Set id for the entry.
         mediaEntry.setId(ENTRY_ID);
-
         //Set media entry type. It could be Live,Vod or Unknown.
         //For now we will use Unknown.
         mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Unknown);
-
         //Create list that contains at least 1 media source.
         //Each media entry can contain a couple of different media sources.
         //All of them represent the same content, the difference is in it format.
@@ -559,7 +556,6 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         // PKMediaSource can be with hls. The player will decide by itself which source is
         // preferred for playback.
         List<PKMediaSource> mediaSources = createMediaSources();
-
         //Set media sources to the entry.
         mediaEntry.setSources(mediaSources);
 
@@ -572,16 +568,12 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
 
         //Create new PKMediaSource instance.
         PKMediaSource mediaSource = new PKMediaSource();
-
         //Set the id.
        // mediaSource.setId(MEDIA_SOURCE_ID);
-
         //Set the content url. In our case it will be link to hls source(.m3u8).
         mediaSource.setUrl(SOURCE_URL);
-
-        //Set the format of the source. In our case it will be hls.
+        //Set the format of the source. In our case it will be mp4 (can be other for example hls).
         mediaSource.setMediaFormat(PKMediaFormat.mp4);
-
         //Add media source to the list.
         mediaSources.add(mediaSource);
 
@@ -590,7 +582,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
 
 
     /**
-     * Just add a simple button which will start/pause playback.
+     *    ==========   REACT PROPS ==============
      */
 
 
