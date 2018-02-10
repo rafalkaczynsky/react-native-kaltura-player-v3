@@ -18,10 +18,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup ;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.support.design.widget.Snackbar;
 
 
@@ -47,6 +48,12 @@ import java.io.File;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit; 
+import java.util.Timer;
+import java.util.TimerTask;
+import android.annotation.TargetApi;
+import android.os.Build;
+
 
 public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     public static final String REACT_CLASS = "supermodule";
@@ -82,13 +89,22 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     private static final String ASSET_LICENSE_URL = null;
     private static final String NETWORK_STATUS = "OFFLINE";
 
+    //HANDLE PLAYER PROPS
+    private double startTime = 0;
+    private double finalTime = 0;
+    private Handler myHandler = new Handler(Looper.getMainLooper());
+    private int forwardTime = 5000; 
+    private int backwardTime = 5000;
+
+    public static int oneTimeOnly = 0;
+
     private Player player;
     private PKMediaConfig mediaConfig;
-    private ImageButton playPauseButton;
+    private ImageButton playButton, pauseButton;
     private ViewGroup playerView;
     private Button submitButton;
-    private SeekBar simpleSeekBar;
-
+    private SeekBar seekbar;
+    private TextView startTimeField, endTimeField;
 
     private ContentManager contentManager;
     private LocalAssetsManager localAssetsManager;
@@ -126,6 +142,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         return playerView;
     }
 
+
     // ==========================================================
     //         ------------ OFFLINE PLAYER ---------------
     // ==========================================================
@@ -144,15 +161,29 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
 
        // ViewGroup flowContainer   = (ViewGroup) ViewGroup.inflate(mContext, R.layout.activity_main_offline, null);
         // Get player View
-        //Create instance of the player.
+
+        // ------ PLACEHOLDERS -------
+
+        // MAIN CONTAINER
         ViewGroup mainContent   = (ViewGroup) ViewGroup.inflate(mContext, R.layout.content_main, null);
-
-
+        // PLAYER VIEW
         ViewGroup placeholder =  mainContent.findViewById(R.id.player_root);
+        // START/END TIME
+        startTimeField = (TextView) mainContent.findViewById(R.id.exo_position);
+        endTimeField = (TextView) mainContent.findViewById(R.id.exo_duration);
 
+        //SEEK BAR
+        seekbar=(SeekBar) mainContent.findViewById(R.id.exo_progress);
+        //PLAY/PAUSE
+        pauseButton = (ImageButton) mainContent.findViewById(R.id.play_pause_button);
+        playButton = (ImageButton) mainContent.findViewById(R.id.exo_pause);
+
+        seekbar.setClickable(false);
+        pauseButton.setEnabled(false);
+
+        // ADD PLAYERVIEW TO MAIN CONTAINER
         if (player == null) {
             player = PlayKitManager.loadPlayer(mContext, null);
-
             View playerView = player.getView();
             //add player view to ViewGroup
             mainContent.addView(playerView);
@@ -160,10 +191,9 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         }
 
    
-      //SEEK BAR
-        simpleSeekBar=(SeekBar) mainContent.findViewById(R.id.exo_progress);
+
         // perform seek bar change listener event used for getting the progress value
-        simpleSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -180,8 +210,6 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
             }
         });
 
-    
-       // mAppCompatActivity.setSupportActionBar(toolbar);
        /*
         fab = (FloatingActionButton) flowContainer.findViewById(R.id.fab);
 
@@ -192,22 +220,23 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
             }
         });*/
 
-                // Add Simple Play/Pause Button to Layout
-        playPauseButton = (ImageButton) mainContent.findViewById(R.id.play_pause_button);
-        playPauseButton.setOnClickListener(new View.OnClickListener() {
+
+                      // GET DURATION AND CONVERT TO MIN AND SEC
+
+        pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (player.isPlaying()) {
-                    //If player is playing, change text of the button and pause.
-                  //  playPauseButton.setText(R.string.play_text);
-                    player.pause();
-                } else {
-                    //If player is not playing, change text of the button and play.
-                  //  playPauseButton.setText(R.string.pause_text);
-                    player.play();
-                }
+                //
             }
         });  
+
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                play(v);
+            }
+        }); 
+
         //Prepare player with media configuration.
         player.prepare(mediaConfig);
 
@@ -216,6 +245,52 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         
         return mainContent;
     }
+
+    public void play(View view){
+
+      Toast.makeText(mContext, "Playing", 
+      Toast.LENGTH_SHORT).show();
+      player.play();
+      finalTime = player.getDuration();
+      startTime = player.getCurrentPosition();
+      if(oneTimeOnly == 0){
+         seekbar.setMax((int) finalTime);
+         oneTimeOnly = 1;
+      } 
+
+      endTimeField.setText(String.format("%d min, %d sec", 
+         TimeUnit.MILLISECONDS.toMinutes((long) finalTime),
+         TimeUnit.MILLISECONDS.toSeconds((long) finalTime) - 
+         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
+         toMinutes((long) finalTime)))
+      );
+      startTimeField.setText(String.format("%d min, %d sec", 
+         TimeUnit.MILLISECONDS.toMinutes((long) startTime),
+         TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
+         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
+         toMinutes((long) startTime)))
+      );
+      seekbar.setProgress((int)startTime);
+      myHandler.postDelayed(UpdateSongTime,100);
+      pauseButton.setEnabled(true);
+      playButton.setEnabled(false);
+   }
+
+   private Runnable UpdateSongTime = new Runnable() {
+       
+     public void run() {
+
+         startTime = player.getCurrentPosition();
+         startTimeField.setText(String.format("%d min, %d sec", 
+            TimeUnit.MILLISECONDS.toMinutes((long) startTime),
+            TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
+            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
+            toMinutes((long) startTime)))
+         );
+         seekbar.setProgress((int)startTime);
+         myHandler.postDelayed(this, 100);
+      }
+   };
 
     private PKMediaEntry mediaEntry(String id, String url, String licenseUrl) {
 
@@ -239,6 +314,8 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
             localAssetsManager = new LocalAssetsManager(context);
         }
     }
+
+
 
     private void startContentManager(ThemedReactContext context) {
         if (contentManager != null) {
@@ -519,8 +596,8 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         //add player view to ViewGroup
         flowContainer.addView(playerView);
         // Add Simple Play/Pause Button to Layout
-        playPauseButton = (ImageButton) flowContainer.findViewById(R.id.play_pause_button);
-        playPauseButton.setOnClickListener(new View.OnClickListener() {
+        playButton = (ImageButton) flowContainer.findViewById(R.id.play_pause_button);
+        playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (player.isPlaying()) {
