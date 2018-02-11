@@ -25,7 +25,8 @@ import android.widget.Toast;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.support.design.widget.Snackbar;
-
+import android.net.NetworkInfo;
+import android.os.StrictMode;
 
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ViewGroupManager;
@@ -54,7 +55,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.net.ConnectivityManager;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.MalformedURLException;
 
 public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     public static final String REACT_CLASS = "supermodule";
@@ -96,10 +105,12 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     private double finalTime = 0;
     private long progressDownload;
     private Handler myHandler = new Handler(Looper.getMainLooper());
-    private Handler myRegHandler = new Handler(Looper.getMainLooper());
+    private Handler offlineHandler = new Handler(Looper.getMainLooper());
     private int forwardTime = 5000; 
     private int backwardTime = 5000;
     public static int oneTimeOnly = 0;
+
+    private boolean isOnline;
  
     private Player player;
     private PKMediaConfig mediaConfig;
@@ -124,6 +135,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         this.mActivity = mActivity;
     }
 
+
     @Override
     public String getName() {
         // Tell React the name of the module
@@ -134,6 +146,10 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     public ViewGroup createViewInstance(ThemedReactContext context){
 
         mContext = context;
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+        StrictMode.setThreadPolicy(policy); 
 
         if (PLAYER_TYPE == "SIMPLE") {
             playerView = createSimplePlayerView(context);
@@ -151,6 +167,16 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     // ==========================================================
 
     private ViewGroup createOfflinePlayerView(ThemedReactContext context){
+
+        isOnline = netIsAvailable();
+
+        if(isOnline == true){
+                    Toast.makeText(mContext, "You are Online", 
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(mContext, "You are Offline", 
+            Toast.LENGTH_SHORT).show();
+        }
 
         //First. Create PKMediaConfig object.
         mediaConfig = new PKMediaConfig();
@@ -191,13 +217,13 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         pauseButton.setEnabled(false);
         downloadProgressBar.setVisibility(4);
 
-        endTimeField.setText(String.format("%d min %d sec", 
+        endTimeField.setText(String.format("%02d:%02d", 
             TimeUnit.MILLISECONDS.toMinutes((long) finalTime),
             TimeUnit.MILLISECONDS.toSeconds((long) finalTime) - 
             TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
             toMinutes((long) finalTime)))
         );
-        startTimeField.setText(String.format("%d min %d sec", 
+        startTimeField.setText(String.format("%02d:%02d", 
             TimeUnit.MILLISECONDS.toMinutes((long) startTime),
             TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
             TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
@@ -218,9 +244,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
-
                 player.seekTo((int) progressChangedValue);
-
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -306,12 +330,20 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
                     unregisterDownloadedAsset();
                 } else {
                     // OFFLINE BUTTON - RED 
-                    if(NETWORK_STATUS == "ONLINE"){
+                    if(isOnline == true){
                         offlineButton.setImageResource(R.drawable.offline_icon_on);
                         downloadProgressBar.setVisibility(0);
                         download();
                     }else {
-                        Toast.makeText(mContext, "Sorry, You are offline!", Toast.LENGTH_LONG).show();
+                       // NEEDS TO BE IMPROVED WHEN SOMETHING NETWORK CHANGE FROM ONLINE TO OFFLINE THEN WILL CRASH
+                        if(isOnline == true){
+                            offlineButton.setImageResource(R.drawable.offline_icon_on);
+                            downloadProgressBar.setVisibility(0);
+                            download();
+                        }else {
+                            Toast.makeText(mContext, "Sorry, You are offline!", Toast.LENGTH_LONG).show();
+                        }
+                       
                     }
                 }
             }
@@ -320,9 +352,13 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         return mainContent;
     }
 
+
     // =====================  PLAY VIDEO =========================
      @TargetApi(Build.VERSION_CODES.GINGERBREAD) public void play(View view){
 
+       // ADD LOGIC IF PLAYER IS NULL TO RELOAD ALL NEEDED STEPS  
+       // IF IS GOING FROM OFFLINE PLAYER WILL NOT PLAY VIDEO NOW
+      player.prepare(mediaConfig);
       Toast.makeText(mContext, "Play", 
       Toast.LENGTH_SHORT).show();
       player.play();
@@ -333,13 +369,13 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
          oneTimeOnly = 1;
       } 
 
-      endTimeField.setText(String.format("%d min %d sec", 
+      endTimeField.setText(String.format("%02d:%02d", 
          TimeUnit.MILLISECONDS.toMinutes((long) finalTime),
          TimeUnit.MILLISECONDS.toSeconds((long) finalTime) - 
          TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
          toMinutes((long) finalTime)))
       );
-      startTimeField.setText(String.format("%d min %d sec", 
+      startTimeField.setText(String.format("%02d:%02d", 
          TimeUnit.MILLISECONDS.toMinutes((long) startTime),
          TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
          TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
@@ -357,6 +393,9 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
 
         Toast.makeText(mContext, "Play Offline", 
         Toast.LENGTH_SHORT).show();
+
+        // ADD LOGIC IF PLAYER IS NULL TO RELOAD ALL NEEDED STEPS  IF NOT THEN NOT
+       //  IF YOU CLICK PLAY NOW , ASSETS ARE ALWAYS REALOADED
 
         final String path = contentManager.getLocalFile(ASSET_ID).getAbsolutePath();
         if (path == null) {
@@ -378,22 +417,16 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
                     if(oneTimeOnly == 0){
                         seekbar.setMax((int) finalTime);
                         oneTimeOnly = 1;
-                    } 
+                    }   
 
-                    endTimeField.setText(String.format("%d min %d sec", 
-                        TimeUnit.MILLISECONDS.toMinutes((long) finalTime),
-                        TimeUnit.MILLISECONDS.toSeconds((long) finalTime) - 
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
-                    toMinutes((long) finalTime))));
-
-                    startTimeField.setText(String.format("%d min %d sec", 
+                    startTimeField.setText(String.format("%02d:%02d", 
                         TimeUnit.MILLISECONDS.toMinutes((long) startTime),
                         TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
                         toMinutes((long) startTime))));
 
                     seekbar.setProgress((int)startTime);
-                    myHandler.postDelayed(UpdateSongTime,100);
+                    offlineHandler.postDelayed(UpdateSongTimeOffline,100);
                     pauseButton.setEnabled(true);
                     playButton.setEnabled(false);
                 } else {
@@ -411,7 +444,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
       @TargetApi(Build.VERSION_CODES.GINGERBREAD) public void run() {
 
          startTime = player.getCurrentPosition();
-         startTimeField.setText(String.format("%d min %d sec", 
+         startTimeField.setText(String.format("%02d:%02d", 
             TimeUnit.MILLISECONDS.toMinutes((long) startTime),
             TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
             TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
@@ -419,6 +452,23 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
          );
          seekbar.setProgress((int)startTime);
          myHandler.postDelayed(this, 100);
+      }
+   };
+
+      // =========== UPDATE VIDEO TIME ============
+   private Runnable UpdateSongTimeOffline = new Runnable() {
+       
+      @TargetApi(Build.VERSION_CODES.GINGERBREAD) public void run() {
+
+         startTime = player.getCurrentPosition();
+         startTimeField.setText(String.format("%02d:%02d", 
+            TimeUnit.MILLISECONDS.toMinutes((long) startTime),
+            TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
+            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
+            toMinutes((long) startTime)))
+         );
+         seekbar.setProgress((int)startTime);
+         offlineHandler.postDelayed(this, 100);
       }
    };
 
@@ -496,7 +546,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         contentManager.addDownloadStateListener(new DownloadStateListener() {
             @Override
             public void onDownloadComplete(DownloadItem item) {
-                //Log.d(TAG, "complete: " + item);
+                Log.d(TAG, "complete: " + item);
                // downloadProgressBar.setVisibility(4);
                 Toast.makeText(mContext, "Download completed ", Toast.LENGTH_LONG).show();
                 registerDownloadedAsset();
@@ -508,14 +558,15 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
                 //Log.d(TAG, "progress: " + downloadedBytes);
                 //Toast.makeText(mContext, "progress: " + downloadedBytes, Toast.LENGTH_LONG).show();
                 float progress  = downloadedBytes * 100 / item.getEstimatedSizeBytes();
-                downloadProgressBar.setProgress((int)progress);
-        }
+                downloadProgressBar.setProgress((int)progress);           
+
+            }
 
             @Override
             public void onDownloadStart(DownloadItem item) {
-                //Log.d(TAG, "start: " + item);
-                downloadProgressBar.setVisibility(0);
-                downloadProgressBar.setMax(100);
+                Log.d(TAG, "start: " + item);
+               // downloadProgressBar.setVisibility(0);
+               // downloadProgressBar.setMax(100);
             }
 
             @Override
@@ -843,7 +894,20 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         return mediaSources;
     }
 
+     // ============== INTERNET CONNECTION =========
 
+    private static boolean netIsAvailable() {
+    try {
+        final URL url = new URL("http://www.google.com");
+        final URLConnection conn = url.openConnection();
+        conn.connect();
+        return true;
+    } catch (MalformedURLException e) {
+        throw new RuntimeException(e);
+    } catch (IOException e) {
+        return false;
+    }
+    }
     /**
      *    ==========   REACT PROPS ==============
      */
