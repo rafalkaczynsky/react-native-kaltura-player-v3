@@ -67,11 +67,11 @@ export default class App extends Component<{}> {
     return (
       <View style={styles.container}>
         <View>
-          <View style={{ backgroundColor: 'black', alignItems: 'flex-end' , paddingTop: this.state.fullScreen ? 80 : 10, paddingRight: this.state.fullScreen ? 20 : 10}}>
+          <View style={{ position: 'absolute', zIndex: 1000, top:20, right: 20, alignItems: 'flex-end' , paddingTop: this.state.fullScreen ? 80 : 10, paddingRight: this.state.fullScreen ? 20 : 10}}>
             <TouchableOpacity onPress={() => this.handleFullScreen()}>
             <Image
           style={{width: 22, height: 20}}
-          source={require('./src/images/fullscreen_grey_192x192.png')}
+          source={require('./src/images/fullscreen.png')}
         />
             </TouchableOpacity>
           </View>
@@ -93,6 +93,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF'
+    backgroundColor: '#F5FCFF',
+    paddingBottom: 20,
+    
   },
 });

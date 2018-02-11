@@ -7,6 +7,7 @@ import com.xxx.R;
 import android.app.Activity;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -67,7 +68,6 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     private static final int START_POSITION = 0; // one minute.
     private static final long MIN_EXP_SEC = 10;
 
-  
     /**
     const config = [
       '2358011',partnerId
@@ -87,24 +87,28 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     private static final String ASSET_URL = "https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8xyq/v/1/flavorId/1_y1rbgvs6/name/a.mp4";
     private static final String ASSET_ID = "1_89fm8xyq";
     private static final String ASSET_LICENSE_URL = null;
-    private static final String NETWORK_STATUS = "OFFLINE";
+    private static final String NETWORK_STATUS = "ONLINE";
+    private static final boolean IS_DOWNLOADABLE = true;
+    private static boolean IS_DOWNLOADED = false;
 
     //HANDLE PLAYER PROPS
     private double startTime = 0;
     private double finalTime = 0;
+    private long progressDownload;
     private Handler myHandler = new Handler(Looper.getMainLooper());
+    private Handler myRegHandler = new Handler(Looper.getMainLooper());
     private int forwardTime = 5000; 
     private int backwardTime = 5000;
-
     public static int oneTimeOnly = 0;
-
+ 
     private Player player;
     private PKMediaConfig mediaConfig;
-    private ImageButton playButton, pauseButton;
+    private ImageButton playButton, pauseButton, rewindButton, forwardButton, offlineButton; 
     private ViewGroup playerView;
     private Button submitButton;
     private SeekBar seekbar;
     private TextView startTimeField, endTimeField;
+    private ProgressBar downloadProgressBar;
 
     private ContentManager contentManager;
     private LocalAssetsManager localAssetsManager;
@@ -142,7 +146,6 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         return playerView;
     }
 
-
     // ==========================================================
     //         ------------ OFFLINE PLAYER ---------------
     // ==========================================================
@@ -175,11 +178,31 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         //SEEK BAR
         seekbar=(SeekBar) mainContent.findViewById(R.id.exo_progress);
         //PLAY/PAUSE
-        pauseButton = (ImageButton) mainContent.findViewById(R.id.play_pause_button);
-        playButton = (ImageButton) mainContent.findViewById(R.id.exo_pause);
+        playButton = (ImageButton) mainContent.findViewById(R.id.play_pause_button);
+        pauseButton = (ImageButton) mainContent.findViewById(R.id.exo_pause);
+        //REWIND/FORWARD
+        rewindButton = (ImageButton) mainContent.findViewById(R.id.exo_rew);
+        forwardButton = (ImageButton) mainContent.findViewById(R.id.exo_ffwd);
+        //DOWNLOAD PROGRESSBAR
+        downloadProgressBar = (ProgressBar) mainContent.findViewById(R.id.downloadProgressBar);
 
+        //INITIAL ATTRIBUTES FOR VIEWS
         seekbar.setClickable(false);
         pauseButton.setEnabled(false);
+        downloadProgressBar.setVisibility(4);
+
+        endTimeField.setText(String.format("%d min %d sec", 
+            TimeUnit.MILLISECONDS.toMinutes((long) finalTime),
+            TimeUnit.MILLISECONDS.toSeconds((long) finalTime) - 
+            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
+            toMinutes((long) finalTime)))
+        );
+        startTimeField.setText(String.format("%d min %d sec", 
+            TimeUnit.MILLISECONDS.toMinutes((long) startTime),
+            TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
+            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
+            toMinutes((long) startTime)))
+        );
 
         // ADD PLAYERVIEW TO MAIN CONTAINER
         if (player == null) {
@@ -187,10 +210,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
             View playerView = player.getView();
             //add player view to ViewGroup
             mainContent.addView(playerView);
-    
         }
-
-   
 
         // perform seek bar change listener event used for getting the progress value
         seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -198,6 +218,9 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
+
+                player.seekTo((int) progressChangedValue);
+
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -205,35 +228,45 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
             }
 
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Toast.makeText(mContext, "Seek bar progress is :" + progressChangedValue,
+                Toast.makeText(mContext, "Video is at " + String.format("%d min %d sec", 
+                    TimeUnit.MILLISECONDS.toMinutes((long) progressChangedValue),
+                    TimeUnit.MILLISECONDS.toSeconds((long) progressChangedValue) - 
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
+                toMinutes((long) progressChangedValue))),
                         Toast.LENGTH_SHORT).show();
             }
         });
 
-       /*
-        fab = (FloatingActionButton) flowContainer.findViewById(R.id.fab);
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showMenu();
-            }
-        });*/
-
-
-                      // GET DURATION AND CONVERT TO MIN AND SEC
-
+        // CONTROL BUTTON LISTENERS
         pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //
+                pause(v);
             }
         });  
 
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                play(v);
+             if (IS_DOWNLOADED == true) {
+                     playOffline(v);
+                  }else{ 
+                     play(v);  
+                  }
+            }
+        }); 
+
+        rewindButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rewind(v);
+            }
+        });  
+
+        forwardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                forward(v);
             }
         }); 
 
@@ -242,13 +275,55 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
 
         startContentManager(context);
         startLocalAssetsManager(context);
-        
+
+        // OFFLINE LOGIC MUST BE AFTER MANAGERS HAS STARTED
+
+       offlineButton =  (ImageButton) mainContent.findViewById(R.id.offline_button);
+
+       if (IS_DOWNLOADABLE == true){
+            if (IS_DOWNLOADED == true) {
+                //OFFLINE BUTTON - GREEN
+                //PLAYBUTTON MUST TRIGGER PLAY FROM LOCAL ASSETS
+                offlineButton.setImageResource(R.drawable.offline_icon_on);
+
+            } else {
+                // OFFLINE BUTTON - RED 
+                // PLAYBUTTON MUST TRIGGER PLAY 
+                offlineButton.setImageResource(R.drawable.offline_icon_off);
+            }
+        }else {
+            offlineButton.setEnabled(false);
+            offlineButton.setImageResource(R.drawable.offline_icon_unable);
+        }
+
+       // OFFLINE BUTTON ON CLICK LISTENER
+        offlineButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (IS_DOWNLOADED == true) {
+                    //OFFLINE BUTTON - GREEN
+                    offlineButton.setImageResource(R.drawable.offline_icon_off);
+                    unregisterDownloadedAsset();
+                } else {
+                    // OFFLINE BUTTON - RED 
+                    if(NETWORK_STATUS == "ONLINE"){
+                        offlineButton.setImageResource(R.drawable.offline_icon_on);
+                        downloadProgressBar.setVisibility(0);
+                        download();
+                    }else {
+                        Toast.makeText(mContext, "Sorry, You are offline!", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+        });  
+     
         return mainContent;
     }
 
-    public void play(View view){
+    // =====================  PLAY VIDEO =========================
+     @TargetApi(Build.VERSION_CODES.GINGERBREAD) public void play(View view){
 
-      Toast.makeText(mContext, "Playing", 
+      Toast.makeText(mContext, "Play", 
       Toast.LENGTH_SHORT).show();
       player.play();
       finalTime = player.getDuration();
@@ -258,13 +333,13 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
          oneTimeOnly = 1;
       } 
 
-      endTimeField.setText(String.format("%d min, %d sec", 
+      endTimeField.setText(String.format("%d min %d sec", 
          TimeUnit.MILLISECONDS.toMinutes((long) finalTime),
          TimeUnit.MILLISECONDS.toSeconds((long) finalTime) - 
          TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
          toMinutes((long) finalTime)))
       );
-      startTimeField.setText(String.format("%d min, %d sec", 
+      startTimeField.setText(String.format("%d min %d sec", 
          TimeUnit.MILLISECONDS.toMinutes((long) startTime),
          TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
          TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
@@ -276,12 +351,67 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
       playButton.setEnabled(false);
    }
 
+ 
+     // =====================  PLAY OFFLINE VIDEO =========================
+     @TargetApi(Build.VERSION_CODES.GINGERBREAD) public void playOffline(View view){
+
+        Toast.makeText(mContext, "Play Offline", 
+        Toast.LENGTH_SHORT).show();
+
+        final String path = contentManager.getLocalFile(ASSET_ID).getAbsolutePath();
+        if (path == null) {
+            Toast.makeText(mContext, "Error path is null", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        localAssetsManager.checkAssetStatus(path, ASSET_ID, new LocalAssetsManager.AssetStatusListener() {
+            @Override
+            public void onStatus(String localAssetPath, long expiryTimeSeconds, long availableTimeSeconds, boolean isRegistered) {
+                //  check if DRM content valid                           or clear content
+                if ((expiryTimeSeconds >= MIN_EXP_SEC && isRegistered) || (expiryTimeSeconds == Long.MAX_VALUE && availableTimeSeconds == Long.MAX_VALUE)) {
+                    //PLAY VIDEO LOGIC
+                    PKMediaSource mediaSource = localAssetsManager.getLocalMediaSource(ASSET_ID, path);
+                    player.prepare(new PKMediaConfig().setMediaEntry(new PKMediaEntry().setSources(Collections.singletonList(mediaSource))));
+                    player.play();
+                    finalTime = player.getDuration();
+                    startTime = player.getCurrentPosition();
+                    if(oneTimeOnly == 0){
+                        seekbar.setMax((int) finalTime);
+                        oneTimeOnly = 1;
+                    } 
+
+                    endTimeField.setText(String.format("%d min %d sec", 
+                        TimeUnit.MILLISECONDS.toMinutes((long) finalTime),
+                        TimeUnit.MILLISECONDS.toSeconds((long) finalTime) - 
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
+                    toMinutes((long) finalTime))));
+
+                    startTimeField.setText(String.format("%d min %d sec", 
+                        TimeUnit.MILLISECONDS.toMinutes((long) startTime),
+                        TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
+                        toMinutes((long) startTime))));
+
+                    seekbar.setProgress((int)startTime);
+                    myHandler.postDelayed(UpdateSongTime,100);
+                    pauseButton.setEnabled(true);
+                    playButton.setEnabled(false);
+                } else {
+                    Toast.makeText(mContext, "Error License Expired or not registerd please refresh it while in online mode", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+        });
+
+   }
+
+   // =========== UPDATE VIDEO TIME ============
    private Runnable UpdateSongTime = new Runnable() {
        
-     public void run() {
+      @TargetApi(Build.VERSION_CODES.GINGERBREAD) public void run() {
 
          startTime = player.getCurrentPosition();
-         startTimeField.setText(String.format("%d min, %d sec", 
+         startTimeField.setText(String.format("%d min %d sec", 
             TimeUnit.MILLISECONDS.toMinutes((long) startTime),
             TimeUnit.MILLISECONDS.toSeconds((long) startTime) - 
             TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
@@ -291,6 +421,46 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
          myHandler.postDelayed(this, 100);
       }
    };
+
+   // =========== PAUSE VIDEO ================
+    public void pause(View view){
+      Toast.makeText(mContext, "Pause", 
+      Toast.LENGTH_SHORT).show();
+
+      player.pause();
+      pauseButton.setEnabled(false);
+      playButton.setEnabled(true);
+   }    
+
+   // ========== SEEK FORWARD ================
+   public void forward(View view){
+      int temp = (int)startTime;
+      if((temp+forwardTime)<=finalTime){
+         startTime = startTime + forwardTime;
+         player.seekTo((int) startTime);
+      }
+      else{
+         Toast.makeText(mContext, 
+         "Cannot jump forward 5 seconds", 
+         Toast.LENGTH_SHORT).show();
+      }
+
+   }
+
+    // ========= REWIND ==============
+    public void rewind(View view){
+      int temp = (int)startTime;
+      if((temp-backwardTime)>0){
+         startTime = startTime - backwardTime;
+         player.seekTo((int) startTime);
+      }
+      else{
+         Toast.makeText(mContext, 
+         "Cannot jump backward 5 seconds",
+         Toast.LENGTH_SHORT).show();
+      }
+
+   }
 
     private PKMediaEntry mediaEntry(String id, String url, String licenseUrl) {
 
@@ -316,7 +486,6 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     }
 
 
-
     private void startContentManager(ThemedReactContext context) {
         if (contentManager != null) {
             return;
@@ -327,17 +496,26 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         contentManager.addDownloadStateListener(new DownloadStateListener() {
             @Override
             public void onDownloadComplete(DownloadItem item) {
-                Log.d(TAG, "complete: " + item);
+                //Log.d(TAG, "complete: " + item);
+               // downloadProgressBar.setVisibility(4);
+                Toast.makeText(mContext, "Download completed ", Toast.LENGTH_LONG).show();
+                registerDownloadedAsset();
+                IS_DOWNLOADED = true;
             }
 
             @Override
             public void onProgressChange(DownloadItem item, long downloadedBytes) {
-                Log.d(TAG, "progress: " + downloadedBytes);
-            }
+                //Log.d(TAG, "progress: " + downloadedBytes);
+                //Toast.makeText(mContext, "progress: " + downloadedBytes, Toast.LENGTH_LONG).show();
+                float progress  = downloadedBytes * 100 / item.getEstimatedSizeBytes();
+                downloadProgressBar.setProgress((int)progress);
+        }
 
             @Override
             public void onDownloadStart(DownloadItem item) {
-                Log.d(TAG, "start: " + item);
+                //Log.d(TAG, "start: " + item);
+                downloadProgressBar.setVisibility(0);
+                downloadProgressBar.setMax(100);
             }
 
             @Override
@@ -348,7 +526,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
             @Override
             public void onDownloadFailure(DownloadItem item, Exception error) {
                 Log.d(TAG, "failure: " + item);
-
+                Toast.makeText(mContext,  "failure: " + item, Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -403,8 +581,11 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
             @Override
             public void onStarted() {
                 Log.d(TAG, "Download Service started");
+  
             }
         });
+
+                       
     }
 
     // Find the minimal "good enough" track. In other words, the track that has bitrate greater than or equal
@@ -465,7 +646,10 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         localAssetsManager.unregisterAsset(path, ASSET_ID, new LocalAssetsManager.AssetRemovalListener() {
             @Override
             public void onRemoved(String localAssetPath) {
-                Toast.makeText(mContext, "unregistered", Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "OFFLINE MODE OFF", Toast.LENGTH_LONG).show();
+                removeDownload();
+                IS_DOWNLOADED = false;
+                offlineButton.setEnabled(true);
             }
         });
     }
@@ -511,7 +695,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(mContext, "registered", Toast.LENGTH_LONG).show();
+                        Toast.makeText(mContext, "OFFLINE MODE ON", Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -571,6 +755,8 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
             item.startDownload();
         }
     }
+
+
 
     // ==========================================================
     //         ------------ SIMPLE PLAYER ----------------
