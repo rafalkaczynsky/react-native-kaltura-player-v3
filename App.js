@@ -17,15 +17,15 @@ export default class App extends Component<{}> {
           <KalturaPlayer 
 
             configIOS={[
-                  '2358011',     //partnerId
-                  '41441941',    //configId
-                  '1_tyok377y',  //entryId
-                  'http://cdnapi.kaltura.com', //baseUrl / url
+                  '1821821',     //partnerId
+                  '26834401',    //configId
+                  '1_89fm8xyq',  //entryId
+                  'https://cdnapisec.kaltura.com', //baseUrl / url
                   null
                 ]}
 
-            entryId={"1_tyok377y"}
-            partnerId={"2358011"}
+            entryId={"1_89fm8xyq"}
+            partnerId={"1821821"}
             sourceUrl={"https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8xyq/v/1/flavorId/1_y1rbgvs6/name/a.mp4"}
             licence={null}
             playerType={"OFFLINE"}
@@ -51,6 +51,7 @@ const styles = StyleSheet.create({
 
 
     /**
+
           <KalturaPlayer 
             configId={"41441941"}
             baseUrl={"https://cfvod.kaltura.com/"}

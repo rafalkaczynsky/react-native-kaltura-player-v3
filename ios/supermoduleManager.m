@@ -27,9 +27,6 @@ RCT_EXPORT_MODULE();
   return [[supermodule alloc] initWithEventDispatcher:self.bridge.eventDispatcher];
 }
 
-
-
-
 RCT_EXPORT_VIEW_PROPERTY(configEntries, NSArray)
 
 // Export constants

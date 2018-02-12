@@ -1,6 +1,7 @@
 //  Created by react-native-create-bridge
 #import <Foundation/Foundation.h>
 #import "supermodule.h"
+#import <MBProgressHUD.h>
 #import <KALTURAPlayerSDK/KPPlayerConfig.h>
 #import <KALTURAPlayerSDK/KPViewController.h>
 
@@ -29,7 +30,6 @@
         _childView = [[UIView alloc] init];
       _childView.backgroundColor = [UIColor blackColor];
     }
-
     return self;
 }
 
@@ -50,8 +50,6 @@
     }
 }
 
-
-
 - (UIViewController *)player {
   if (!_player) {
     // Account Params 
@@ -66,8 +64,6 @@
   }
   return _player;
 }
-
-
 
 // once prop is set we can use it here 
 - (void)setConfigEntries:(NSArray *)configEntries
@@ -99,12 +95,12 @@
     configuration.cacheSize = 0.8;
 
     _kalturaPlayer = [[KPViewController alloc] initWithConfiguration:configuration];
-
     _kalturaPlayer.view.frame = _childView.frame;
-
-
     [_childView addSubview: _kalturaPlayer.view];
+
     [_childView setNeedsDisplay];
+
+
 }
 
 
