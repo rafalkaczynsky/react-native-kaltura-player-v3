@@ -64,6 +64,7 @@ import java.net.UnknownHostException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.MalformedURLException;
+import 	java.net.HttpURLConnection;
 
 public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     public static final String REACT_CLASS = "supermodule";
@@ -305,16 +306,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
        offlineButton =  (ImageButton) mainContent.findViewById(R.id.offline_button);
 
        if (IS_DOWNLOADABLE == true){
-            if (IS_DOWNLOADED == true) {
-                //OFFLINE BUTTON - GREEN
-                //PLAYBUTTON MUST TRIGGER PLAY FROM LOCAL ASSETS
-                offlineButton.setImageResource(R.drawable.offline_icon_on);
-
-            } else {
-                // OFFLINE BUTTON - RED 
-                // PLAYBUTTON MUST TRIGGER PLAY 
-                offlineButton.setImageResource(R.drawable.offline_icon_off);
-            }
+            offlineButton.setImageResource(R.drawable.offline_icon_unable);
         }else {
             offlineButton.setEnabled(false);
             offlineButton.setImageResource(R.drawable.offline_icon_unable);
@@ -328,23 +320,38 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
                     //OFFLINE BUTTON - GREEN
                     offlineButton.setImageResource(R.drawable.offline_icon_off);
                     unregisterDownloadedAsset();
+     
                 } else {
                     // OFFLINE BUTTON - RED 
-                    if(isOnline == true){
-                        offlineButton.setImageResource(R.drawable.offline_icon_on);
-                        downloadProgressBar.setVisibility(0);
-                        download();
-                    }else {
                        // NEEDS TO BE IMPROVED WHEN SOMETHING NETWORK CHANGE FROM ONLINE TO OFFLINE THEN WILL CRASH
-                        if(isOnline == true){
-                            offlineButton.setImageResource(R.drawable.offline_icon_on);
-                            downloadProgressBar.setVisibility(0);
-                            download();
-                        }else {
-                            Toast.makeText(mContext, "Sorry, You are offline!", Toast.LENGTH_LONG).show();
+                       
+                        try {
+                            URL url = new URL("http://www.google.com");
+
+                            HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+                           // urlc.setRequestProperty("User-Agent", "Android Application:"+Z.APP_VERSION);
+                           // urlc.setRequestProperty("Connection", "close");
+                           // urlc.setConnectTimeout(1000 * 30); // mTimeout is in seconds
+                            urlc.connect();
+
+                            if (urlc.getResponseCode() == 200) {
+                               // Main.Log("getResponseCode == 200");
+                               isOnline = true;
+                               offlineButton.setImageResource(R.drawable.offline_icon_on);
+                               downloadProgressBar.setVisibility(0);
+                               download();
+                            }else{
+                                isOnline = false;
+                                Toast.makeText(mContext, "Sorry, You are offline!", Toast.LENGTH_LONG).show();
+
+                            }
+                        } catch (MalformedURLException e1) {
+                            //e1.printStackTrace();
+                        } catch (IOException e) {
+                           // e.printStackTrace();
                         }
                        
-                    }
+
                 }
             }
         });  
@@ -358,8 +365,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
 
        // ADD LOGIC IF PLAYER IS NULL TO RELOAD ALL NEEDED STEPS  
        // IF IS GOING FROM OFFLINE PLAYER WILL NOT PLAY VIDEO NOW
-      player.prepare(mediaConfig);
-      Toast.makeText(mContext, "Play", 
+      Toast.makeText(mContext, "Play Online", 
       Toast.LENGTH_SHORT).show();
       player.play();
       finalTime = player.getDuration();
@@ -628,15 +634,23 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
                 trackSelector.setSelectedTracks(DownloadItem.TrackType.TEXT, trackSelector.getAvailableTracks(DownloadItem.TrackType.TEXT));
             }
         });
+
         contentManager.start(new ContentManager.OnStartedListener() {
             @Override
             public void onStarted() {
                 Log.d(TAG, "Download Service started");
-  
+                    File localFile = contentManager.getLocalFile(ASSET_ID);
+                    if (localFile == null) {
+                        Toast.makeText(mContext, "OFFLINE MODE OFF", Toast.LENGTH_LONG).show();
+                        IS_DOWNLOADED = false;
+                        offlineButton.setImageResource(R.drawable.offline_icon_off);
+                    }else {
+                        Toast.makeText(mContext, "OFFLINE MODE ON", Toast.LENGTH_LONG).show();
+                        IS_DOWNLOADED = true;
+                        offlineButton.setImageResource(R.drawable.offline_icon_on);
+                    }
             }
-        });
-
-                       
+        });             
     }
 
     // Find the minimal "good enough" track. In other words, the track that has bitrate greater than or equal
