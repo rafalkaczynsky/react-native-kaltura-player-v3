@@ -86,19 +86,18 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
       'http://cdnapi.kaltura.com', url */
 
     // PROPS NEEDED FOR SIMPLE PLAYER 
-    private static final String SOURCE_URL = "https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8xyq/v/1/flavorId/1_y1rbgvs6/name/a.mp4";
-    private static final String ENTRY_ID = "1_89fm8xyq"; //ENTRY_ID
-    private static final String MEDIA_SOURCE_ID = "1821821"; // PARTNER_ID
+    private static String SOURCE_URL = ""; // URL
+    private static String ENTRY_ID = ""; // ENTRY_ID 
+    private static String MEDIA_SOURCE_ID = ""; // PARTNER_ID
     
-
     private static final String PLAYER_TYPE = "OFFLINE"; // CAN BE OFFLINE ALSO
 
     // PROPS  NEEDED FOR OFFLINE PLAYER
-    private static final String ASSET_URL = "https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8xyq/v/1/flavorId/1_y1rbgvs6/name/a.mp4";
-    private static final String ASSET_ID = "1_89fm8xyq";
-    private static final String ASSET_LICENSE_URL = null;
-    private static final String NETWORK_STATUS = "ONLINE";
-    private static final boolean IS_DOWNLOADABLE = true;
+    private static String ASSET_URL = "";
+    private static String ASSET_ID = ""; // ENTRY ID
+    private static String ASSET_LICENSE_URL = null;
+    private static boolean IS_DOWNLOADABLE;
+
     private static boolean IS_DOWNLOADED = false;
 
     //HANDLE PLAYER PROPS
@@ -322,17 +321,11 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
                     unregisterDownloadedAsset();
      
                 } else {
-                    // OFFLINE BUTTON - RED 
-                       // NEEDS TO BE IMPROVED WHEN SOMETHING NETWORK CHANGE FROM ONLINE TO OFFLINE THEN WILL CRASH
-                       
+                     
                         try {
                             URL url = new URL("http://www.google.com");
 
                             HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
-                           // urlc.setRequestProperty("User-Agent", "Android Application:"+Z.APP_VERSION);
-                           // urlc.setRequestProperty("Connection", "close");
-                           // urlc.setConnectTimeout(1000 * 30); // mTimeout is in seconds
-                            urlc.connect();
 
                             if (urlc.getResponseCode() == 200) {
                                // Main.Log("getResponseCode == 200");
@@ -340,16 +333,21 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
                                offlineButton.setImageResource(R.drawable.offline_icon_on);
                                downloadProgressBar.setVisibility(0);
                                download();
+                                urlc.disconnect();
                             }else{
                                 isOnline = false;
                                 Toast.makeText(mContext, "Sorry, You are offline!", Toast.LENGTH_LONG).show();
-
+                                urlc.disconnect();
                             }
                         } catch (MalformedURLException e1) {
-                            //e1.printStackTrace();
+                            e1.printStackTrace();
+                            Toast.makeText(mContext, "Sorry, You are offline!", Toast.LENGTH_LONG).show();
                         } catch (IOException e) {
-                           // e.printStackTrace();
-                        }
+                           e.printStackTrace();
+                           Toast.makeText(mContext, "Sorry, You are offline!", Toast.LENGTH_LONG).show();
+                        } 
+                           
+                  
                        
 
                 }
@@ -649,6 +647,10 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
                         IS_DOWNLOADED = true;
                         offlineButton.setImageResource(R.drawable.offline_icon_on);
                     }
+
+                    if (IS_DOWNLOADABLE == false){
+                        offlineButton.setImageResource(R.drawable.offline_icon_unable);
+                    }
             }
         });             
     }
@@ -821,8 +823,6 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
         }
     }
 
-
-
     // ==========================================================
     //         ------------ SIMPLE PLAYER ----------------
     // ==========================================================
@@ -926,10 +926,114 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
      *    ==========   REACT PROPS ==============
      */
 
+    @ReactProp(name = "sourceUrl")
+    public void setSourceUrl(View view, String prop) {
 
-    @ReactProp(name = "exampleProp")
-    public void setExampleProp(View view, String prop) {
+        SOURCE_URL = prop;
+        ASSET_URL = prop;
+
+        mediaConfig = new PKMediaConfig();
+        //Set start position of the media. This will
+        //automatically start playback from specified position.
+        mediaConfig.setStartPosition(START_POSITION);
+        //Second. Create PKMediaEntry object.
+        PKMediaEntry mediaEntry = createMediaEntry();
+        //Add it to the mediaConfig.
+        mediaConfig.setMediaEntry(mediaEntry);
+        //Create instance of the player.
+        // ADD PLAYERVIEW TO MAIN CONTAINER
+        View playerView = player.getView();
+        //add player view to ViewGroup
+        
+        player.prepare(mediaConfig);
+
+
         // Set properties from React onto your native component via a setter method
         // https://facebook.github.io/react-native/docs/native-components-android.html#3-expose-view-property-setters-using-reactprop-or-reactpropgroup-annotation
     }
+
+    @ReactProp(name = "entryId")
+    public void setEntryId(View view, String prop) {
+        ENTRY_ID = prop;
+        ASSET_ID = prop;
+
+        mediaConfig = new PKMediaConfig();
+        //Set start position of the media. This will
+        //automatically start playback from specified position.
+        mediaConfig.setStartPosition(START_POSITION);
+        //Second. Create PKMediaEntry object.
+        PKMediaEntry mediaEntry = createMediaEntry();
+        //Add it to the mediaConfig.
+        mediaConfig.setMediaEntry(mediaEntry);
+        //Create instance of the player.
+        // ADD PLAYERVIEW TO MAIN CONTAINER
+        View playerView = player.getView();
+        //add player view to ViewGroup
+        
+        player.prepare(mediaConfig);
+        // Set properties from React onto your native component via a setter method
+        // https://facebook.github.io/react-native/docs/native-components-android.html#3-expose-view-property-setters-using-reactprop-or-reactpropgroup-annotation
+
+    }
+    @ReactProp(name = "partnerId")
+    public void setPartnerId(View view, String prop) {
+        MEDIA_SOURCE_ID = prop;
+
+        mediaConfig = new PKMediaConfig();
+        //Set start position of the media. This will
+        //automatically start playback from specified position.
+        mediaConfig.setStartPosition(START_POSITION);
+        //Second. Create PKMediaEntry object.
+        PKMediaEntry mediaEntry = createMediaEntry();
+        //Add it to the mediaConfig.
+        mediaConfig.setMediaEntry(mediaEntry);
+        //Create instance of the player.
+        // ADD PLAYERVIEW TO MAIN CONTAINER
+        View playerView = player.getView();
+        //add player view to ViewGroup
+        
+        player.prepare(mediaConfig);
+        // Set properties from React onto your native component via a setter method
+        // https://facebook.github.io/react-native/docs/native-components-android.html#3-expose-view-property-setters-using-reactprop-or-reactpropgroup-annotation
+
+    }
+    @ReactProp(name = "canDownload")
+    public void setCanDownload(View view, boolean prop) {
+        IS_DOWNLOADABLE = prop;
+        // Set properties from React onto your native component via a setter method
+        // https://facebook.github.io/react-native/docs/native-components-android.html#3-expose-view-property-setters-using-reactprop-or-reactpropgroup-annotation
+        if(prop == true) {
+            Toast.makeText(mContext, "Can download", Toast.LENGTH_LONG).show();
+              offlineButton.setEnabled(true);
+              offlineButton.setImageResource(R.drawable.offline_icon_off);
+        }else {
+             Toast.makeText(mContext, "Can't download", Toast.LENGTH_LONG).show();
+             offlineButton.setEnabled(false);
+             offlineButton.setImageResource(R.drawable.offline_icon_unable);
+        }
+    } 
+
+    //ASSET_LICENSE_URL 
+      @ReactProp(name = "licence")
+    public void setCanDownload(View view, String prop) {
+        ASSET_LICENSE_URL = prop;
+        // Set properties from React onto your native component via a setter method
+        // https://facebook.github.io/react-native/docs/native-components-android.html#3-expose-view-property-setters-using-reactprop-or-reactpropgroup-annotation
+
+    } 
 }
+
+/*
+    // PROPS NEEDED FOR SIMPLE PLAYER 
+    private static final String SOURCE_URL = "https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8xyq/v/1/flavorId/1_y1rbgvs6/name/a.mp4";
+    private static final String ENTRY_ID = "1_89fm8xyq"; // ENTRY_ID
+    private static final String MEDIA_SOURCE_ID = "1821821"; // PARTNER_ID
+    
+    private static final String PLAYER_TYPE = "OFFLINE"; // CAN BE OFFLINE ALSO
+
+    // PROPS  NEEDED FOR OFFLINE PLAYER
+    private static final String ASSET_URL = SOURCE_URL;
+    private static final String ASSET_ID = ENTRY_ID; // ENTRY ID
+    private static final String ASSET_LICENSE_URL = null;
+
+    */

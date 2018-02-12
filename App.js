@@ -1,88 +1,38 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
-
 import React, { Component } from 'react';
 import {
-  Platform,
+
   StyleSheet,
-  Text,
   View,
-  Dimensions,
-  TouchableOpacity,
-  Image
+
 } from 'react-native';
 
-import SupermoduleView from './supermoduleNativeView';
-
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu'
-});
-
-var { height, width } = Dimensions.get('window');
+import KalturaPlayer from './supermoduleNativeView';
 
 export default class App extends Component<{}> {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      fullScreen: false,
-      width: 380,
-      height: 250
-    };
-  }
-
-  handleFullScreen(){
-
-    if (!this.state.fullScreen){
-      this.setState({width: width, height: height, fullScreen: true})
-    }
-    else{
-      this.setState({width: 380, height: 250, fullScreen: false})
-    }
-  }
 
   render() {
-    /**
-     *  
-     * 
-   NSString *partnerId = config[0];
-   NSString *configId = config[1];
-   NSString *entryId = config[2];
-   NSString *url = config[3];
-     * 
-     */
-    const config = [
-      '2358011',
-      '41441941',
-      '1_tyok377y',
-      'http://cdnapi.kaltura.com',
-      null
-    ];
+
     return (
       <View style={styles.container}>
-        <View>
-          <View style={{ position: 'absolute', zIndex: 1000, top:20, right: 20, alignItems: 'flex-end' , paddingTop: this.state.fullScreen ? 80 : 10, paddingRight: this.state.fullScreen ? 20 : 10}}>
-            <TouchableOpacity onPress={() => this.handleFullScreen()}>
-            <Image
-          style={{width: 22, height: 20}}
-          source={require('./src/images/fullscreen.png')}
-        />
-            </TouchableOpacity>
-          </View>
+          <KalturaPlayer 
 
-          {/* ------ OUR REACT - NATIVE CALTURA PLAYER------ */}
-          <SupermoduleView
-            configEntries={config}
-            style={{width: this.state.width, height: this.state.height }}
+            configIOS={[
+                  '2358011',     //partnerId
+                  '41441941',    //configId
+                  '1_tyok377y',  //entryId
+                  'http://cdnapi.kaltura.com', //baseUrl / url
+                  null
+                ]}
+
+            entryId={"1_tyok377y"}
+            partnerId={"2358011"}
+            sourceUrl={"https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8xyq/v/1/flavorId/1_y1rbgvs6/name/a.mp4"}
+            licence={null}
+            playerType={"OFFLINE"}
+            canDownload={true}
+            width={380}
+            height={250}
           />
-        {/* ----------------------------------------------- */}
-        </View>
       </View>
     );
   }
@@ -98,3 +48,19 @@ const styles = StyleSheet.create({
     
   },
 });
+
+
+    /**
+          <KalturaPlayer 
+            configId={"41441941"}
+            baseUrl={"https://cfvod.kaltura.com/"}
+            entryId={"1_89fm8xyq"}
+            partnerId={"1821821"}
+            sourceUrl={"https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8xyq/v/1/flavorId/1_y1rbgvs6/name/a.mp4"}
+            licence={null}
+            playerType={"OFFLINE"}
+            canDownload={true}
+            width={380}
+            height={250}
+          />
+     */
