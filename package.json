@@ -14,7 +14,7 @@
     "babel-preset-react-native": "4.0.0",
     "jest": "22.1.4",
     "react": "16.2.0",
-    "react-native": "^0.53.0",
+    "react-native": "^0.51.0",
     "react-test-renderer": "16.2.0",
     "react-native-elements": "^1.0.0-beta"
   },
