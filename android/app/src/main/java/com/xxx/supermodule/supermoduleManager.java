@@ -78,16 +78,23 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
     private static final int START_POSITION = 0; // one minute.
     private static final long MIN_EXP_SEC = 10;
 
+    /**
+    const config = [
+      '2358011',partnerId
+      '41441941',configId
+      '1_tyok377y',entryId
+      'http://cdnapi.kaltura.com', url */
+
     // PROPS NEEDED FOR SIMPLE PLAYER 
-    private static  String SOURCE_URL = "https://cfvod.kaltura.com/pd/p/1821821/sp/182182100/serveFlavor/entryId/1_89fm8xyq/v/1/flavorId/1_y1rbgvs6/name/a.mp4"; 
-    private static  String ENTRY_ID = "1_89fm8xyq"; // ENTRY_ID
-    private static  String MEDIA_SOURCE_ID = "1821821"; // PARTNER_ID
+    private static String SOURCE_URL = ""; // URL
+    private static String ENTRY_ID = ""; // ENTRY_ID 
+    private static String MEDIA_SOURCE_ID = ""; // PARTNER_ID
     
     private static final String PLAYER_TYPE = "OFFLINE"; // CAN BE OFFLINE ALSO
 
     // PROPS  NEEDED FOR OFFLINE PLAYER
-    private static String ASSET_URL = SOURCE_URL;
-    private static String ASSET_ID = ENTRY_ID ; // ENTRY ID
+    private static String ASSET_URL = "";
+    private static String ASSET_ID = ""; // ENTRY ID
     private static String ASSET_LICENSE_URL = null;
     private static boolean IS_DOWNLOADABLE;
 
@@ -749,6 +756,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
             return;
         }
         localAssetsManager.registerAsset(originMediaSource, localFile.getAbsolutePath(), ASSET_ID, new LocalAssetsManager.AssetRegistrationListener() {
+            
             @Override
             public void onRegistered(String localAssetPath) {
                 mainHandler.post(new Runnable() {
@@ -758,6 +766,7 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
                     }
                 });
             }
+
             @Override
             public void onFailed(String localAssetPath, Exception error) {
                 mainHandler.post(new Runnable() {
@@ -1002,6 +1011,15 @@ public class supermoduleManager extends ViewGroupManager<ViewGroup> {
              offlineButton.setEnabled(false);
              offlineButton.setImageResource(R.drawable.offline_icon_unable);
         }
+    } 
+
+    //ASSET_LICENSE_URL 
+      @ReactProp(name = "licence")
+    public void setCanDownload(View view, String prop) {
+        ASSET_LICENSE_URL = prop;
+        // Set properties from React onto your native component via a setter method
+        // https://facebook.github.io/react-native/docs/native-components-android.html#3-expose-view-property-setters-using-reactprop-or-reactpropgroup-annotation
+
     } 
 }
 

@@ -31,15 +31,6 @@ SupermoduleView.propTypes = {
 
 export default class KalturaPlayer extends Component {
   render () {
-
-    if (this.props.androidWebView){
-      return (
-        <WebView
-        source={{uri: 'https://github.com/facebook/react-native'}}
-        style={{width: this.props.width, height: this.props.height }}
-      />
-      )
-    }
     return (
     <SupermoduleView
       configEntries={this.props.configIOS}
