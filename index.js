@@ -1,4 +1,3 @@
-import { AppRegistry } from 'react-native';
-import App from './App';
+import KalturaPlayer from './supermoduleNativeView';
 
-AppRegistry.registerComponent('xxx', () => App);
+export default KalturaPlayer;

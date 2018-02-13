@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+/*import React, { Component } from 'react';
 import {
 
   StyleSheet,
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
 });
 
-
+*/
     /**
 
           <KalturaPlayer 
