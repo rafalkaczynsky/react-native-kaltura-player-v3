@@ -1,6 +1,7 @@
 {
-  "name": "react-native-kaltura-player-v3",
-  "version": "1.0.0",
+  "name": "xxx",
+  "version": "0.0.1",
+  "private": true,
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "jest"
@@ -8,6 +9,7 @@
   "dependencies": {
     "prop-types": "^15.6.0",
     "react": "16.2.0",
+    "react-native": "0.52.2",
     "react-native-create-bridge": "^2.0.1",
     "react-native-elements": "^1.0.0-beta"
   },
@@ -19,25 +21,5 @@
   },
   "jest": {
     "preset": "react-native"
-  },
-  "description": "KalturaPlayer is React Native component for both iOS and Android. Uses sdk v2 for iOS and newest Playkit for Android. Player on android has offline playback build in. ",
-  "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rafalkaczynsky/react-native-kaltura-player-v2.git"
-  },
-  "keywords": [
-    "kaltura",
-    "player",
-    "video",
-    "playkit",
-    "react-native",
-    "react"
-  ],
-  "author": "Rafal Kaczynsky <rafalkaczynsky1985@gmail.com> (http://www.rafalkaczynsky.com)",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/rafalkaczynsky/react-native-kaltura-player-v2/issues"
-  },
-  "homepage": "https://github.com/rafalkaczynsky/react-native-kaltura-player-v2#readme"
+  }
 }
