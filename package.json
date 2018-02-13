@@ -7,15 +7,16 @@
   },
   "dependencies": {
     "prop-types": "^15.6.0",
-    "react": "16.2.0",
-    "react-native-create-bridge": "^2.0.1",
-    "react-native-elements": "^1.0.0-beta"
+    "react-native-create-bridge": "^2.0.1"
   },
   "devDependencies": {
     "babel-jest": "22.1.0",
     "babel-preset-react-native": "4.0.0",
     "jest": "22.1.4",
-    "react-test-renderer": "16.2.0"
+    "react": "16.2.0",
+    "react-native": "^0.53.0",
+    "react-test-renderer": "16.2.0",
+    "react-native-elements": "^1.0.0-beta"
   },
   "jest": {
     "preset": "react-native"
